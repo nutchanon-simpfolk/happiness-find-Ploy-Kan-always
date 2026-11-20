@@ -637,8 +637,23 @@
 
   function reveal(lv) {
     if (lv.reveal === 'side') {
-      $('#p-fake').src = lv.fake;
-      $('#p-real').src = lv.real;
+      const fakeImg = $('#p-fake'), realImg = $('#p-real');
+      // Level 3: set each frame to the exact aspect ratio of its own image.
+      if (cur === 2) {
+        [[fakeImg, lv.fake], [realImg, lv.real]].forEach(([img, src]) => {
+          const fitFrame = () => {
+            if (img.naturalWidth && img.naturalHeight) {
+              img.closest('.frame').style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+            }
+          };
+          img.onload = fitFrame;
+          img.src = src;
+          if (img.complete) fitFrame();
+        });
+      } else {
+        fakeImg.src = lv.fake;
+        realImg.src = lv.real;
+      }
       $('#pl-l').textContent = lv.labels[0];
       $('#pl-r').textContent = lv.labels[1];
       $('#single').hidden = true;

@@ -208,7 +208,7 @@
   .findfake { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 14px; }
   .findfake-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: clamp(8px, 1.5vw, 16px); width: 100%; }
   .findfake-card { min-width: 0; border: 3px solid var(--rose); background: #FBF7EC; padding: 4px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 14px rgba(90,64,50,.12); }
-  .findfake-card img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: contain; background: #FBF7EC; border-radius: 7px; }
+  .findfake-card img { display: block; width: 100%; aspect-ratio: 1 / 1; object-fit: cover; background: #FBF7EC; border-radius: 7px; }
   button.findfake-card { cursor: pointer; transition: transform .15s, border-color .2s; }
   button.findfake-card:hover { transform: translateY(-2px); }
   .findfake-card:disabled { cursor: default; opacity: .9; }
@@ -240,7 +240,7 @@
     height: auto;
     aspect-ratio: 1 / 1;
     max-height: none;
-    object-fit: contain;
+    object-fit: cover;
   }
   @media (max-height: 750px) {
     #s-blank.findfake-level .findfake-screen {

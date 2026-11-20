@@ -324,6 +324,15 @@
 
   <button class="back-level" id="back-level" type="button" hidden>← ด่านก่อนหน้า</button>
 
+  <!-- แสดงเมื่อเลือกคำตอบผิดในทุกด่าน -->
+  <div class="findfake-modal" id="wrong-answer-modal" hidden>
+    <div class="findfake-modal-panel">
+      <img class="findfake-hurt-img" src="ployfeelhurt.png" alt="พลอยงอน">
+      <p class="findfake-hurt-title">พลอยงอน</p>
+      <button class="next" id="wrong-answer-back" type="button">กลับไปดูคำตอบ</button>
+    </div>
+  </div>
+
   <!-- ด่านที่ยังเป็นหน้าเปล่า -->
   <section class="screen" id="s-blank" hidden>
     <div class="wrap blank">
@@ -548,6 +557,10 @@
     };
     $('#next').style.visibility = 'visible';
     reveal(lv);
+    if (!right) {
+      const wrongModal = $('#wrong-answer-modal');
+      if (wrongModal) wrongModal.hidden = false;
+    }
   }
 
   function reveal(lv) {
@@ -612,6 +625,9 @@
   });
   $('#back-level').addEventListener('click', () => {
     if (cur > 0) loadLevel(cur - 1);
+  });
+  $('#wrong-answer-back').addEventListener('click', () => {
+    $('#wrong-answer-modal').hidden = true;
   });
   
   $('#music').addEventListener('click', () => {

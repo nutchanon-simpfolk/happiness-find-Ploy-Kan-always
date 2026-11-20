@@ -421,6 +421,7 @@
             </div>
           </div>
           <p class="feedback" id="findfake-feedback" aria-live="polite"></p>
+          <button class="next" id="findfake-next" type="button" hidden>${nextLabel(i)}</button>
         `;
         const cards = [...blank.querySelectorAll('.findfake-card')];
         cards.forEach((card) => card.addEventListener('click', () => {
@@ -444,6 +445,9 @@
           blank.querySelectorAll('#findfake-options .ans').forEach((b) => { b.disabled = true; if (b !== button) b.classList.add('dim'); });
           $('#findfake-feedback').textContent = 'ถูกทุกข้อ ❤️';
           $('#findfake-feedback').className = 'feedback ok';
+          blank.querySelectorAll('.findfake-card').forEach((card) => { card.disabled = true; });
+          $('#findfake-next').hidden = false;
+          $('#findfake-next').addEventListener('click', goNext, { once: true });
           results[cur] = { right: true, chosen: button.textContent, correct: 'ทุกข้อถูกหมด' };
         }));
       } else {

@@ -261,6 +261,28 @@
   .music.off { color: var(--rose); }
   .music.off::after { content: ""; position: absolute; width: 26px; height: 2px; background: var(--cocoa); transform: rotate(-45deg); }
 
+  /* ปรับหน้าด่านให้พอดีกับ iPad และมือถือ รวมถึงแนวนอน */
+  @media (min-width: 501px) {
+    .level-body { gap: clamp(8px, 1.4dvh, 16px); padding-top: max(18px, env(safe-area-inset-top, 0px)); padding-bottom: max(14px, env(safe-area-inset-bottom, 0px)); }
+    .level-body .stamp { width: min(100%, calc((100dvh - 340px) * var(--r, 1.5795))); }
+    .level-body .pair { width: min(100%, calc(2 * (100dvh - 360px) * var(--r, 1.5795) + 14px)); }
+    .level-body .bar { gap: 8px; }
+  }
+  @media (max-height: 850px) {
+    .level-body { gap: 7px; padding-top: 8px; padding-bottom: 8px; }
+    .level-tag { font-size: clamp(27px, 4.5dvh, 38px); }
+    .question { font-size: clamp(21px, 3.6dvh, 30px); }
+    .level-body .stamp { width: min(100%, calc((100dvh - 270px) * var(--r, 1.5795))); }
+    .level-body .pair { width: min(100%, calc(2 * (100dvh - 290px) * var(--r, 1.5795) + 10px)); gap: 8px; }
+    .ans { width: 52px; height: 52px; }
+    .ans.rect { min-height: 46px; padding: 7px 18px; }
+    .after { min-height: 42px; }
+  }
+  @media (max-width: 700px) {
+    .level-body .stamp { width: min(100%, calc((100dvh - 320px) * var(--r, 1.5795))); }
+    .level-body .pair { width: min(100%, calc(2 * (100dvh - 340px) * var(--r, 1.5795) + 8px)); }
+  }
+
   @media (prefers-reduced-motion: reduce) {
     .disc { animation: none; }
     .screen, .pair, .extra { animation: none; }
@@ -613,6 +635,25 @@
     show('s-summary');
   }
 
+  // รองรับการลากเส้นแบ่งภาพด้วยนิ้วบน iPhone/iPad รวมถึงเมาส์
+  function moveCompareTo(clientX) {
+    const rect = cmp.getBoundingClientRect();
+    if (!rect.width) return;
+    const p = Math.max(0, Math.min(100, ((clientX - rect.left) / rect.width) * 100));
+    cancelAnimationFrame(anim);
+    setP(p);
+  }
+  cmp.addEventListener('pointerdown', (event) => {
+    if (!cmp.classList.contains('revealed')) return;
+    if (event.target === slider) return;
+    event.preventDefault();
+    cmp.setPointerCapture?.(event.pointerId);
+    moveCompareTo(event.clientX);
+  });
+  cmp.addEventListener('pointermove', (event) => {
+    if (!cmp.classList.contains('revealed') || !event.buttons && event.pointerType === 'mouse') return;
+    if (event.pointerType !== 'mouse' || event.buttons === 1) moveCompareTo(event.clientX);
+  });
   slider.addEventListener('input', () => { cancelAnimationFrame(anim); setP(slider.value); });
 
   $('#play').addEventListener('click', () => {

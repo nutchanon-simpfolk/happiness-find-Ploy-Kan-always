@@ -1,0 +1,519 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>บททดสอบเจ้าบ่าว</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:wght@400;500&family=Italiana&family=Noto+Serif+Thai:wght@500;600;700&family=Pinyon+Script&family=Sarabun:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+  img { max-width: 100%; }
+  /* Layout: one-column wedding-invitation game, one screen at a time (intro, levels, blank, summary).
+     Single committed look (vintage cream + dusty rose), so no dark variant by choice. */
+  :root {
+    --cream: #FAF4E4;
+    --ivory: #EDE6D8;
+    --rose: #CDB0A0;
+    --cocoa: #7A5C4B;
+    --ink: #1A1A1A;
+    --ok: #4F7F4B;
+    --bad: #B64A42;
+    --font-script: "Pinyon Script", "Snell Roundhand", cursive;
+    --font-display: "Italiana", "Bodoni Moda", Georgia, serif;
+    --font-num: "Bodoni Moda", "Playfair Display", Georgia, serif;
+    --font-th-display: "Noto Serif Thai", "Sarabun", serif;
+    --font-body: "Sarabun", "Noto Sans Thai", system-ui, sans-serif;
+    color-scheme: light;
+  }
+  html, body { height: 100%; }
+  body {
+    background: var(--cream);
+    color: var(--cocoa);
+    font-family: var(--font-body);
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    overflow-x: hidden;
+  }
+  [hidden] { display: none !important; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--cocoa); outline-offset: 3px; }
+
+  .screen { min-height: 100%; display: flex; flex-direction: column; animation: enter .5s ease both; }
+  @keyframes enter { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+  .wrap {
+    width: 100%;
+    max-width: 480px;
+    margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+    box-sizing: border-box;
+  }
+
+  /* ---------- Intro ---------- */
+  #s-intro { background: linear-gradient(170deg, #F1EADB 0%, var(--ivory) 38%, var(--cream) 38.1%, var(--cream) 100%); }
+  .cornice {
+    height: 54px;
+    background:
+      repeating-linear-gradient(90deg, #DCD0BC 0 9px, transparent 9px 18px) 0 14px / 100% 10px no-repeat,
+      linear-gradient(#E4DAC7, #E4DAC7) 0 30px / 100% 2px no-repeat,
+      linear-gradient(#E9E0CF, #E9E0CF) 0 36px / 100% 1px no-repeat;
+    opacity: .9;
+  }
+  .intro-body { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 6px; padding-block: 8px 28px; }
+  .kicker { font-family: var(--font-script); font-size: 34px; line-height: 1; margin: 0; }
+  .title { font-family: var(--font-th-display); font-weight: 600; font-size: clamp(34px, 11vw, 48px); line-height: 1.25; margin: 0; text-wrap: balance; }
+  .orn { display: flex; align-items: center; gap: 12px; color: var(--rose); margin: 6px 0 4px; font-size: 14px; }
+  .orn::before, .orn::after { content: ""; width: 56px; height: 1px; background: var(--rose); }
+  .names { font-family: var(--font-display); font-size: clamp(40px, 13vw, 58px); letter-spacing: .06em; line-height: 1; margin: 0; display: flex; align-items: baseline; gap: .35em; }
+  .names i { font-family: var(--font-script); font-style: normal; font-size: .7em; color: var(--rose); letter-spacing: 0; }
+  .date { font-family: var(--font-num); font-size: 13px; letter-spacing: .28em; margin: 8px 0 22px; }
+
+  .vinyl { position: relative; width: 168px; height: 168px; border: 0; background: none; padding: 0; border-radius: 50%; }
+  .disc {
+    position: absolute; inset: 0; border-radius: 50%;
+    background:
+      radial-gradient(circle, transparent 0 31%, rgba(255,255,255,.06) 31.5% 32%, transparent 32.5%),
+      repeating-radial-gradient(circle, #1A1A1A 0 2px, #262321 2px 3px);
+    box-shadow: 0 10px 24px rgba(90, 64, 50, .28);
+    animation: spin 14s linear infinite;
+  }
+  .disc::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 20deg, transparent 0 12%, rgba(255,255,255,.18) 18%, transparent 26% 62%, rgba(255,255,255,.14) 68%, transparent 76%); }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .hub { position: absolute; inset: 31%; border-radius: 50%; background: var(--rose); display: grid; place-items: center; box-shadow: inset 0 0 0 3px rgba(250,244,228,.45); transition: transform .2s; }
+  .hub::before { content: ""; margin-left: 5px; border-style: solid; border-width: 13px 0 13px 22px; border-color: transparent transparent transparent var(--cream); }
+  .vinyl:hover .hub { transform: scale(1.06); }
+  .hint { font-family: var(--font-num); font-size: 11px; letter-spacing: .3em; text-transform: uppercase; margin-top: 14px; }
+
+  .lace { margin-top: auto; height: 60px; position: relative; background: var(--rose); }
+  .lace::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 14px; background: radial-gradient(circle at 12px 0, var(--cream) 10px, transparent 10.6px) 0 0 / 24px 14px repeat-x; }
+  .lace p { margin: 0; padding-top: 24px; text-align: center; color: var(--cream); font-family: var(--font-script); font-size: 24px; line-height: 1.2; }
+
+  /* ---------- Level ---------- */
+  #s-level, #s-blank, #s-summary { background: var(--cream); }
+  .level-tag { font-family: var(--font-script); font-size: 38px; line-height: 1; margin: 0; }
+  .question { font-family: var(--font-th-display); font-weight: 600; font-size: clamp(24px, 7vw, 30px); line-height: 1.3; margin: 0; text-wrap: balance; }
+
+  /* หน้าด่านเต็มจอ: หัวเรื่อง รูป และปุ่มตอบอยู่เป็นกลุ่มเดียวกลางจอ */
+  #s-level { min-height: 100dvh; }
+  .level-body {
+    flex: 1; min-height: 0; width: 100%; max-width: none; box-sizing: border-box;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px;
+    padding-block: 12px 14px;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .stage { flex: none; width: 100%; display: flex; justify-content: center; }
+  .bar { display: flex; flex-direction: column; align-items: center; gap: 10px; width: 100%; }
+  .after { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 22px; min-height: 52px; }
+
+  .stamp {
+    --pad: 18px;
+    width: clamp(180px, calc((100dvh - var(--reserve, 300px)) * var(--r, 1.5795)), 100%);
+    padding: var(--pad);
+    box-sizing: border-box;
+    background-color: var(--rose);
+    background-image:
+      radial-gradient(circle at 10px 0, var(--cream) 5px, transparent 5.6px),
+      radial-gradient(circle at 10px 10px, var(--cream) 5px, transparent 5.6px),
+      radial-gradient(circle at 0 10px, var(--cream) 5px, transparent 5.6px),
+      radial-gradient(circle at 10px 10px, var(--cream) 5px, transparent 5.6px);
+    background-size: 20px 10px, 20px 10px, 10px 20px, 10px 20px;
+    background-position: 0 0, 0 100%, 0 0, 100% 0;
+    background-repeat: repeat-x, repeat-x, repeat-y, repeat-y;
+    filter: drop-shadow(0 8px 14px rgba(90, 64, 50, .18));
+  }
+  @media (max-width: 500px) { .stamp { --pad: 12px; } }
+
+  .cmp, .frame { position: relative; aspect-ratio: var(--r, 1.5795); max-width: 100%; box-shadow: 0 0 0 5px #FBF7EC; background: var(--ivory); overflow: hidden; }
+  .cmp { --p: 100%; user-select: none; touch-action: pan-y; }
+  .cmp img, .frame img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+  .blur-layer { position: absolute; inset: 0; clip-path: inset(0 calc(100% - var(--p)) 0 0); }
+  .badge {
+    position: absolute; width: 34px; height: 34px; transform: translate(-50%, -50%);
+    display: grid; place-items: center; border-radius: 50%;
+    background: var(--cream); color: var(--cocoa); border: 2px solid var(--rose);
+    font-family: var(--font-num); font-weight: 500; font-size: 18px; line-height: 1;
+    box-shadow: 0 2px 8px rgba(60, 40, 30, .3);
+  }
+  .grip { position: absolute; top: 0; bottom: 0; left: var(--p); width: 3px; margin-left: -1.5px; background: var(--cream); box-shadow: 0 0 8px rgba(60,40,30,.4); pointer-events: none; opacity: 0; transition: opacity .3s; }
+  .grip::after { content: "\2194"; position: absolute; top: 50%; left: 50%; width: 34px; height: 34px; margin: -17px 0 0 -17px; display: grid; place-items: center; border-radius: 50%; background: var(--cream); color: var(--cocoa); font-size: 18px; box-shadow: 0 2px 8px rgba(60,40,30,.35); }
+  .cmp.revealed .grip { opacity: 1; }
+  .slider { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; -webkit-appearance: none; appearance: none; background: transparent; display: none; }
+  .cmp.revealed .slider { display: block; }
+  .slider::-webkit-slider-thumb { -webkit-appearance: none; width: 2px; height: 100%; }
+  .slider::-moz-range-thumb { width: 2px; height: 100%; border: 0; background: transparent; }
+  .lbl { position: absolute; bottom: 8px; padding: 2px 10px; border-radius: 999px; background: rgba(250,244,228,.92); color: var(--cocoa); font-size: 12px; font-weight: 500; opacity: 0; transition: opacity .4s .5s; pointer-events: none; }
+  .lbl.l { left: 8px; } .lbl.r { right: 8px; }
+  .cmp.revealed .lbl { opacity: 1; }
+  .pair .lbl { opacity: 1; transition: none; }
+
+  /* เทียบภาพแบบอยู่ข้างกัน ขนาดเท่ากัน */
+  .pair {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+    width: min(100%, calc(2 * (100dvh - var(--reserve, 300px)) * var(--r, 1.5795) + 14px));
+    animation: enter .5s ease both;
+  }
+  .pair .stamp { width: auto; --pad: 12px; }
+  @media (max-width: 500px) { .pair { gap: 8px; } .pair .stamp { --pad: 8px; } .pair .lbl { font-size: 11px; padding: 1px 8px; } }
+
+  .answers { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; margin-top: 6px; }
+  .ans {
+    width: 62px; height: 62px; border-radius: 50%;
+    background: var(--cream); border: 2px solid var(--rose); color: var(--cocoa);
+    font-family: var(--font-num); font-size: 26px; font-weight: 500; line-height: 1;
+    transition: background-color .2s, border-color .2s, color .2s, transform .15s;
+  }
+  .ans.rect {
+    width: auto; height: auto; min-width: 150px; min-height: 56px; padding: 8px 26px; border-radius: 10px;
+    font-family: var(--font-th-display); font-size: 19px; font-weight: 600;
+  }
+  .ans.name { min-width: 0; min-height: 44px; padding: 6px 18px; font-size: 17px; }
+  .ans:hover:not(:disabled) { background: #F2E6D8; transform: translateY(-2px); }
+  .ans:disabled { cursor: default; }
+  .ans.sel { background: var(--rose); border-color: var(--rose); color: var(--cream); }
+  .ans.ok { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .ans.bad { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .ans.dim { opacity: .45; }
+  .extra { display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; max-width: 560px; animation: enter .4s ease both; }
+
+  .feedback { min-height: 28px; margin: 0; font-weight: 500; font-size: 17px; }
+  .feedback.ok { color: var(--ok); } .feedback.bad { color: var(--bad); }
+
+  .next {
+    border: 0; border-radius: 999px; padding: 13px 34px;
+    background: var(--cocoa); color: var(--cream);
+    font-family: var(--font-th-display); font-weight: 600; font-size: 17px;
+    box-shadow: 0 6px 14px rgba(90, 64, 50, .25);
+    transition: transform .15s, background-color .2s;
+  }
+  .next:hover { transform: translateY(-2px); background: #6A4E3E; }
+
+  /* ---------- หน้าเปล่า (ด่าน 5) ---------- */
+  .blank { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; padding-block: 40px; }
+
+  /* ---------- สรุปผล ---------- */
+  .summary { flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 10px; padding-block: 28px 36px; }
+  .score { display: flex; align-items: baseline; gap: 8px; font-family: var(--font-num); color: var(--cocoa); margin: 2px 0 10px; }
+  .score b { font-size: 64px; font-weight: 500; line-height: 1; }
+  .score span { font-size: 22px; }
+  .sum-list { list-style: none; margin: 0 0 18px; padding: 0; width: 100%; display: flex; flex-direction: column; gap: 8px; text-align: left; }
+  .sum-list li { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: center; padding: 10px 14px 10px 12px; background: #FBF7EC; border: 1px solid #E8DCC8; border-radius: 10px; }
+  .mark { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; color: #fff; font-weight: 600; font-size: 17px; }
+  .mark.ok { background: var(--ok); } .mark.bad { background: var(--bad); } .mark.none { background: var(--rose); }
+  .sum-q { font-family: var(--font-th-display); font-weight: 600; font-size: 16px; line-height: 1.35; }
+  .sum-a { font-size: 14px; opacity: .92; }
+  .sum-a em { font-style: normal; font-weight: 500; }
+  .sum-list li.skip { opacity: .6; }
+
+  /* ปุ่มเปิด/ปิดเพลง มุมขวาบน */
+  .music {
+    position: fixed; z-index: 5;
+    top: calc(env(safe-area-inset-top, 0px) + 10px);
+    right: max(12px, env(safe-area-inset-right, 0px));
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--cream); border: 2px solid var(--rose); color: var(--cocoa);
+    font-size: 20px; line-height: 1; display: grid; place-items: center; padding: 0;
+    box-shadow: 0 2px 8px rgba(90, 64, 50, .2);
+  }
+  .music.off { color: var(--rose); }
+  .music.off::after { content: ""; position: absolute; width: 26px; height: 2px; background: var(--cocoa); transform: rotate(-45deg); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .disc { animation: none; }
+    .screen, .pair, .extra { animation: none; }
+  }
+</style>
+</head>
+<body>
+<main id="app">
+  <!-- หน้าแรก -->
+  <section class="screen" id="s-intro">
+    <div class="cornice" aria-hidden="true"></div>
+    <div class="wrap intro-body">
+      <p class="kicker">Wedding Game</p>
+      <h1 class="title">บททดสอบเจ้าบ่าว</h1>
+      <div class="orn" aria-hidden="true">&#10022;</div>
+      <p class="names" aria-label="Ploy และ Kan"><span>PLOY</span><i>&amp;</i><span>KAN</span></p>
+      <p class="date">22 NOVEMBER 2026</p>
+      <button class="vinyl" id="play" aria-label="เริ่มเล่นเกมและเปิดเพลง">
+        <span class="disc" aria-hidden="true"></span>
+        <span class="hub" aria-hidden="true"></span>
+      </button>
+      <span class="hint">Tap to play</span>
+    </div>
+    <div class="lace" aria-hidden="true"><p>Ploy &amp; Kan</p></div>
+  </section>
+
+  <!-- ด่าน -->
+  <section class="screen" id="s-level" hidden>
+    <div class="level-body" id="level-body">
+      <p class="level-tag" id="lv-tag">Level 1</p>
+      <h2 class="question" id="lv-q"></h2>
+      <div class="stage">
+        <div class="stamp" id="single">
+          <div class="cmp" id="cmp">
+            <img id="img-real" alt="รูปจริง" draggable="false">
+            <div class="blur-layer">
+              <img id="img-fake" alt="รูปโจทย์" draggable="false">
+              <div id="badges"></div>
+            </div>
+            <div class="grip" aria-hidden="true"></div>
+            <span class="lbl l" id="lbl-l" aria-hidden="true"></span>
+            <span class="lbl r" id="lbl-r" aria-hidden="true"></span>
+            <input class="slider" id="slider" type="range" min="0" max="100" value="100" aria-label="เลื่อนเพื่อเทียบภาพ">
+          </div>
+        </div>
+        <div class="pair" id="pair" hidden>
+          <div class="stamp"><div class="frame"><img id="p-fake" alt="ภาพที่ให้ดู" draggable="false"><span class="lbl l" id="pl-l"></span></div></div>
+          <div class="stamp"><div class="frame"><img id="p-real" alt="ภาพจริง" draggable="false"><span class="lbl l" id="pl-r"></span></div></div>
+        </div>
+      </div>
+      <div class="bar">
+        <div class="answers" id="answers" role="group" aria-label="ตัวเลือกคำตอบ"></div>
+        <div class="extra" id="extra" hidden></div>
+        <div class="after">
+          <p class="feedback" id="feedback" aria-live="polite"></p>
+          <button class="next" id="next" style="visibility:hidden">ด่านถัดไป &rarr;</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ด่านที่ยังเป็นหน้าเปล่า -->
+  <section class="screen" id="s-blank" hidden>
+    <div class="wrap blank">
+      <p class="level-tag" id="blank-tag">Level 5</p>
+      <button class="next" id="blank-next">ด่านถัดไป &rarr;</button>
+    </div>
+  </section>
+
+  <!-- สรุปผล -->
+  <section class="screen" id="s-summary" hidden>
+    <div class="wrap summary">
+      <p class="level-tag">Summary</p>
+      <h2 class="question">สรุปผลคำตอบ</h2>
+      <div class="score" aria-label="คะแนนรวม"><b id="sum-score">0</b><span id="sum-total">/ 5</span></div>
+      <ol class="sum-list" id="sum-list"></ol>
+      <button class="next" id="again">เล่นอีกครั้ง</button>
+    </div>
+  </section>
+</main>
+<button class="music" id="music" hidden aria-label="ปิดเสียงเพลง" aria-pressed="false">&#9834;</button>
+
+<script>
+  /* ตั้งค่าด่านทั้งหมดที่นี่
+     kind:    'quiz' (มีรูปและปุ่มตอบ) | 'bride' (ด่านพิเศษ มีปุ่มชื่อ) | 'blank' (หน้าเปล่า)
+     reveal:  'slider' เลื่อนเทียบ | 'side' วางข้างกัน | 'none' ไม่มีรูปเฉลย
+     style:   'num' ปุ่มวงกลมเลข | 'rect' ปุ่มสี่เหลี่ยม
+     answer:  ลำดับของคำตอบที่ถูกในรายการ options (นับจาก 0) */
+  const LEVELS = [
+    { kind: 'quiz', question: 'คนไหนคือเจ้าสาว?', fake: 'fake1.png', real: 'real1.jpg',
+      reveal: 'slider', labels: ['ภาพเบลอ', 'ภาพจริง'], style: 'num', options: ['1', '2', '3', '4'], answer: 2,
+      badges: [{ x: 12.7, y: 23 }, { x: 62.5, y: 31 }, { x: 82.5, y: 23.5 }, { x: 61, y: 57.6 }] },
+    { kind: 'quiz', question: 'อันนี้ภาพจริงหรือไม่?', fake: 'fake2.png', real: 'real2.jpg',
+      reveal: 'side', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['จริง', 'ไม่จริง'], answer: 1 },
+    { kind: 'quiz', question: 'อันนี้ภาพจริงหรือไม่?', fake: 'fake3.png', real: 'real3.jpg',
+      reveal: 'side', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['จริง', 'ไม่จริง'], answer: 1 },
+    { kind: 'quiz', question: 'เจ้าสาวอยู่ไหน?', fake: 'fake4.png', real: 'real4.jpg',
+      reveal: 'slider', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['เจ้าสาวอยู่ข้างๆ', 'เจ้าสาวอยู่บ้าน'], answer: 0 },
+    { kind: 'blank' },
+    { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
+      reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
+      names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] }
+  ];
+  const MUSIC_SRC = encodeURI('คู่ชีวิต.mp3'); // เพลงเริ่มเล่นเมื่อกดแผ่นเสียงที่หน้าแรก
+
+  const $ = (s) => document.querySelector(s);
+  const screens = document.querySelectorAll('.screen');
+  const cmp = $('#cmp'), slider = $('#slider'), levelEl = $('#s-level');
+  let cur = 0, results = [], audio = null, anim = 0;
+
+  function show(id) {
+    screens.forEach((s) => { s.hidden = s.id !== id; });
+    window.scrollTo(0, 0);
+  }
+  function setP(p) { cmp.style.setProperty('--p', p + '%'); slider.value = p; }
+  const isLast = (i) => i === LEVELS.length - 1;
+  const nextLabel = (i) => (isLast(i) ? 'ดูสรุปผล' : 'ด่านถัดไป →');
+
+  function optText(lv, i) { return lv.style === 'num' ? 'ข้อ ' + lv.options[i] : lv.options[i]; }
+
+  function loadLevel(i) {
+    cur = i;
+    const lv = LEVELS[i];
+    cancelAnimationFrame(anim);
+    if (lv.kind === 'blank') {
+      $('#blank-tag').textContent = 'Level ' + (i + 1);
+      $('#blank-next').textContent = nextLabel(i);
+      show('s-blank');
+      return;
+    }
+    $('#lv-tag').textContent = 'Level ' + (i + 1);
+    $('#lv-q').textContent = lv.question;
+    levelEl.style.setProperty('--reserve', (lv.reserve || 300) + 'px');
+    levelEl.style.setProperty('--r', 1.5795);
+
+    const fake = $('#img-fake'), real = $('#img-real');
+    fake.onload = () => { if (fake.naturalWidth) levelEl.style.setProperty('--r', fake.naturalWidth / fake.naturalHeight); };
+    fake.src = lv.fake;
+    if (lv.real) real.src = lv.real; else real.removeAttribute('src');
+
+    $('#lbl-l').textContent = lv.labels ? lv.labels[0] : '';
+    $('#lbl-r').textContent = lv.labels ? lv.labels[1] : '';
+    $('#single').hidden = false;
+    $('#pair').hidden = true;
+    cmp.classList.remove('revealed');
+    setP(100);
+
+    $('#badges').innerHTML = (lv.badges || []).map((o, k) =>
+      `<span class="badge" style="left:${o.x}%;top:${o.y}%">${lv.options[k]}</span>`).join('');
+
+    $('#feedback').textContent = '';
+    $('#feedback').className = 'feedback';
+    const nx = $('#next');
+    nx.style.visibility = 'hidden';
+    nx.textContent = nextLabel(i);
+    const extra = $('#extra');
+    extra.hidden = true; extra.innerHTML = '';
+
+    const box = $('#answers');
+    box.innerHTML = '';
+    lv.options.forEach((label, k) => {
+      const b = document.createElement('button');
+      b.className = 'ans' + (lv.style === 'rect' ? ' rect' : '');
+      b.textContent = label;
+      b.setAttribute('aria-label', lv.style === 'num' ? 'ตัวเลือก ' + label : label);
+      b.addEventListener('click', () => onPick(k));
+      box.appendChild(b);
+    });
+    show('s-level');
+  }
+
+  function onPick(k) {
+    const lv = LEVELS[cur];
+    // ด่านพิเศษ: กด "พี่น้องคนอื่น" แล้วค่อยเลือกชื่อ (ผิดทุกชื่อ)
+    if (lv.kind === 'bride' && k !== lv.answer) {
+      const btns = [...document.querySelectorAll('#answers .ans')];
+      btns.forEach((b) => { b.disabled = true; });
+      btns[k].classList.add('sel');
+      const extra = $('#extra');
+      extra.innerHTML = '';
+      lv.names.forEach((n) => {
+        const b = document.createElement('button');
+        b.className = 'ans rect name';
+        b.textContent = n;
+        b.addEventListener('click', () => finish(k, false, n, b));
+        extra.appendChild(b);
+      });
+      extra.hidden = false;
+      return;
+    }
+    finish(k, k === lv.answer, null, null);
+  }
+
+  function finish(k, right, sub, subBtn) {
+    const lv = LEVELS[cur];
+    const btns = [...document.querySelectorAll('#answers .ans')];
+    btns.forEach((b, idx) => {
+      b.disabled = true;
+      b.classList.remove('sel');
+      if (idx !== k) b.classList.add('dim');
+    });
+    document.querySelectorAll('#extra .ans').forEach((b) => { b.disabled = true; if (b !== subBtn) b.classList.add('dim'); });
+    btns[k].classList.remove('dim');
+    btns[k].classList.add(right ? 'ok' : 'bad');
+    if (subBtn) subBtn.classList.add('bad');
+    if (!right) {
+      btns[lv.answer].classList.remove('dim');
+      btns[lv.answer].classList.add('ok');
+    }
+    const fb = $('#feedback');
+    fb.textContent = right ? 'ถูกต้อง!' : 'ยังไม่ใช่นะ คำตอบคือ ' + optText(lv, lv.answer);
+    fb.className = 'feedback ' + (right ? 'ok' : 'bad');
+
+    results[cur] = {
+      right,
+      chosen: optText(lv, k) + (sub ? ' › ' + sub : ''),
+      correct: optText(lv, lv.answer)
+    };
+    $('#next').style.visibility = 'visible';
+    reveal(lv);
+  }
+
+  function reveal(lv) {
+    if (lv.reveal === 'side') {
+      $('#p-fake').src = lv.fake;
+      $('#p-real').src = lv.real;
+      $('#pl-l').textContent = lv.labels[0];
+      $('#pl-r').textContent = lv.labels[1];
+      $('#single').hidden = true;
+      $('#pair').hidden = false;
+      return;
+    }
+    if (lv.reveal !== 'slider') return;
+    cmp.classList.add('revealed');
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) { setP(50); return; }
+    const t0 = performance.now(), dur = 1300, from = 100, to = 50;
+    const step = (t) => {
+      const k = Math.min(1, (t - t0 - 350) / dur);
+      if (k < 0) { anim = requestAnimationFrame(step); return; }
+      setP(from + (to - from) * (1 - Math.pow(1 - k, 3)));
+      if (k < 1) anim = requestAnimationFrame(step);
+    };
+    anim = requestAnimationFrame(step);
+  }
+
+  function goNext() {
+    if (cur + 1 < LEVELS.length) loadLevel(cur + 1);
+    else showSummary();
+  }
+
+  function showSummary() {
+    let right = 0, total = 0;
+    $('#sum-list').innerHTML = LEVELS.map((lv, i) => {
+      if (lv.kind === 'blank') {
+        return `<li class="skip"><span class="mark none">–</span><div><div class="sum-q">ด่าน ${i + 1}</div><div class="sum-a">ยังไม่มีโจทย์</div></div></li>`;
+      }
+      total += 1;
+      const r = results[i];
+      if (r && r.right) right += 1;
+      if (!r) {
+        return `<li class="skip"><span class="mark none">–</span><div><div class="sum-q">ด่าน ${i + 1} · ${lv.question}</div><div class="sum-a">ยังไม่ได้ตอบ</div></div></li>`;
+      }
+      const detail = r.right
+        ? `คุณตอบ: <em>${r.chosen}</em>`
+        : `คุณตอบ: <em>${r.chosen}</em> · เฉลย: <em>${r.correct}</em>`;
+      return `<li><span class="mark ${r.right ? 'ok' : 'bad'}">${r.right ? '✓' : '✕'}</span><div><div class="sum-q">ด่าน ${i + 1} · ${lv.question}</div><div class="sum-a">${detail}</div></div></li>`;
+    }).join('');
+    $('#sum-score').textContent = right;
+    $('#sum-total').textContent = '/ ' + total;
+    show('s-summary');
+  }
+
+  slider.addEventListener('input', () => { cancelAnimationFrame(anim); setP(slider.value); });
+
+  $('#play').addEventListener('click', () => {
+    if (MUSIC_SRC) {
+      try { audio = audio || Object.assign(new Audio(MUSIC_SRC), { loop: true }); audio.play().catch(() => {}); } catch (e) {}
+      $('#music').hidden = false;
+    }
+    results = [];
+    loadLevel(0);
+  });
+  $('#music').addEventListener('click', () => {
+    if (!audio) return;
+    audio.muted = !audio.muted;
+    $('#music').classList.toggle('off', audio.muted);
+    $('#music').setAttribute('aria-pressed', String(audio.muted));
+    $('#music').setAttribute('aria-label', audio.muted ? 'เปิดเสียงเพลง' : 'ปิดเสียงเพลง');
+  });
+  $('#next').addEventListener('click', goNext);
+  $('#blank-next').addEventListener('click', goNext);
+  $('#again').addEventListener('click', () => { results = []; loadLevel(0); });
+</script>
+</body>
+</html>

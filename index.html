@@ -192,6 +192,21 @@
   }
   .next:hover { transform: translateY(-2px); background: #6A4E3E; }
 
+  /* ---------- Level 5: เลือกรูปที่ไม่มีอยู่จริง ---------- */
+  .findfake { width: min(100%, 900px); display: flex; flex-direction: column; align-items: center; gap: 18px; }
+  .findfake-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; width: 100%; }
+  .findfake-card { border: 3px solid var(--rose); background: #FBF7EC; padding: 5px; border-radius: 12px; overflow: hidden; box-shadow: 0 5px 14px rgba(90,64,50,.12); }
+  .findfake-card img { display: block; width: 100%; aspect-ratio: 4 / 3; object-fit: cover; border-radius: 7px; }
+  button.findfake-card { cursor: pointer; transition: transform .15s, border-color .2s; }
+  button.findfake-card:hover { transform: translateY(-2px); }
+  .findfake-card:disabled { cursor: default; opacity: .8; }
+  .findfake-actions { width: 100%; display: flex; flex-direction: column; align-items: center; gap: 12px; animation: enter .35s ease both; }
+  .findfake-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; width: 100%; }
+  .findfake-options .ans.rect { min-width: 0; min-height: 58px; width: 100%; padding: 10px 12px; font-size: clamp(15px, 3.8vw, 19px); }
+  .findfake-note { margin: 0; font-family: var(--font-th-display); font-weight: 600; font-size: clamp(23px, 6vw, 30px); }
+  .findfake-done { color: var(--ok); font-weight: 600; margin: 0; }
+  @media (max-width: 380px) { .findfake-options { grid-template-columns: 1fr; } .findfake-grid { gap: 8px; } }
+
   /* ---------- หน้าเปล่า (ด่าน 5) ---------- */
   .blank { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; padding-block: 40px; }
 
@@ -320,7 +335,7 @@
       reveal: 'side', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['จริง', 'ไม่จริง'], answer: 1 },
     { kind: 'quiz', question: 'เจ้าสาวอยู่ไหน?', fake: 'fake4.png', real: 'real4.jpg',
       reveal: 'slider', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['เจ้าสาวอยู่ข้างๆ', 'เจ้าสาวอยู่บ้าน'], answer: 0 },
-    { kind: 'blank' },
+    { kind: 'findfake', question: 'เหตุการณ์ไหนไม่มีอยู่จริง?', images: ['real55.jpg', 'fake5.jpg', 'real555.jpg', 'real5555.jpg'], fake: 'fake5.jpg', real: 'real5.jpg', options: ['พลอยต้องมีกานต์', 'รู้สึกออร่าความสวยจากภาพ', 'อันนี้ภาพ AI', 'ผมไม่รู้ ผมรักภรรยา'] },
     { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
       reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
       names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] }
@@ -346,9 +361,58 @@
     cur = i;
     const lv = LEVELS[i];
     cancelAnimationFrame(anim);
-    if (lv.kind === 'blank') {
+    if (lv.kind === 'blank' || lv.kind === 'findfake') {
       $('#blank-tag').textContent = 'Level ' + (i + 1);
       $('#blank-next').textContent = nextLabel(i);
+      $('#blank-next').hidden = lv.kind === 'findfake';
+      const blank = $('#s-blank .blank');
+      if (lv.kind === 'findfake') {
+        blank.innerHTML = `
+          <p class="level-tag">Level ${i + 1}</p>
+          <h2 class="question">${lv.question}</h2>
+          <div class="findfake">
+            <div class="findfake-grid" id="findfake-grid">
+              ${lv.images.map((src, k) => `<button class="findfake-card" type="button" data-image="${src}" aria-label="เลือกรูปที่ ${k + 1}"><img src="${src}" alt="${src}" draggable="false"><span>${src}</span></button>`).join('')}
+            </div>
+            <div class="findfake-actions" id="findfake-actions" hidden>
+              <p class="findfake-note">ทำไมถึงผิด</p>
+              <div class="findfake-options" id="findfake-options">
+                ${lv.options.map((label) => `<button class="ans rect" type="button">${label}</button>`).join('')}
+              </div>
+            </div>
+          </div>
+          <p class="feedback" id="findfake-feedback" aria-live="polite"></p>
+          <button class="next" id="findfake-next" hidden>${nextLabel(i)}</button>
+        `;
+        const cards = [...blank.querySelectorAll('.findfake-card')];
+        cards.forEach((card) => card.addEventListener('click', () => {
+          if (card.dataset.image !== lv.fake) {
+            card.style.borderColor = 'var(--bad)';
+            return;
+          }
+          cards.forEach((item) => { item.disabled = true; });
+          card.style.borderColor = 'var(--ok)';
+          $('#findfake-actions').hidden = false;
+        }));
+        blank.querySelectorAll('#findfake-options .ans').forEach((button) => button.addEventListener('click', () => {
+          const fakeCard = blank.querySelector('[data-image="fake5.jpg"]');
+          const img = fakeCard.querySelector('img');
+          img.src = lv.real;
+          img.alt = lv.real;
+          fakeCard.dataset.image = lv.real;
+          fakeCard.querySelector('span').textContent = lv.real;
+          button.classList.add('ok');
+          blank.querySelectorAll('#findfake-options .ans').forEach((b) => { b.disabled = true; if (b !== button) b.classList.add('dim'); });
+          $('#findfake-feedback').textContent = 'ถูกทุกข้อ ❤️';
+          $('#findfake-feedback').className = 'feedback ok';
+          $('#findfake-next').hidden = false;
+          $('#findfake-next').addEventListener('click', goNext, { once: true });
+          results[cur] = { right: true, chosen: button.textContent, correct: 'ทุกข้อถูกหมด' };
+        }));
+      } else {
+        blank.innerHTML = '<p class="level-tag" id="blank-tag">Level ' + (i + 1) + '</p><button class="next" id="blank-next">' + nextLabel(i) + '</button>';
+        $('#blank-next').addEventListener('click', goNext);
+      }
       show('s-blank');
       return;
     }
@@ -475,7 +539,7 @@
   function showSummary() {
     let right = 0, total = 0;
     $('#sum-list').innerHTML = LEVELS.map((lv, i) => {
-      if (lv.kind === 'blank') {
+      if (lv.kind === 'blank' || lv.kind === 'findfake') {
         return `<li class="skip"><span class="mark none">–</span><div><div class="sum-q">ด่าน ${i + 1}</div><div class="sum-a">ยังไม่มีโจทย์</div></div></li>`;
       }
       total += 1;

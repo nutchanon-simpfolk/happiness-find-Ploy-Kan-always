@@ -192,6 +192,15 @@
   }
   .next:hover { transform: translateY(-2px); background: #6A4E3E; }
 
+  .back-level { position: fixed; z-index: 50; top: max(12px, env(safe-area-inset-top, 0px)); left: max(12px, env(safe-area-inset-left, 0px)); border: 1px solid var(--rose); border-radius: 999px; padding: 9px 14px; background: rgba(250,244,228,.96); color: var(--cocoa); box-shadow: 0 3px 12px rgba(60,40,30,.12); font-size: 14px; font-weight: 600; }
+  .findfake-modal { position: fixed; inset: 0; z-index: 40; display: flex; align-items: center; justify-content: center; padding: max(18px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(18px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); background: rgba(26,20,17,.72); box-sizing: border-box; overflow-y: auto; }
+  .findfake-modal[hidden] { display: none !important; }
+  .findfake-modal-panel { width: min(100%, 720px); max-height: 100%; overflow-y: auto; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 18px; padding: clamp(16px, 4vw, 28px); box-sizing: border-box; border-radius: 18px; background: var(--cream); text-align: center; box-shadow: 0 18px 55px rgba(0,0,0,.3); }
+  .findfake-modal .findfake-options { width: 100%; }
+  .findfake-hurt-img { display: block; width: min(100%, 520px); max-height: 58dvh; object-fit: contain; border-radius: 12px; }
+  .findfake-hurt-title { margin: 0; color: #D00000; font-family: var(--font-th-display); font-weight: 800; font-size: clamp(38px, 9vw, 72px); line-height: 1.15; }
+  @media (max-width: 500px) { .back-level { top: max(8px, env(safe-area-inset-top, 0px)); left: max(8px, env(safe-area-inset-left, 0px)); padding: 8px 11px; font-size: 13px; } .findfake-modal-panel { gap: 14px; border-radius: 14px; } }
+
   /* ---------- Level 5: เลือกรูปที่ไม่มีอยู่จริง ---------- */
   #s-blank.findfake-level { min-height: 100dvh; }
   #s-blank.findfake-level .wrap { width: 100%; max-width: none; padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
@@ -313,6 +322,8 @@
     </div>
   </section>
 
+  <button class="back-level" id="back-level" type="button" hidden>← ด่านก่อนหน้า</button>
+
   <!-- ด่านที่ยังเป็นหน้าเปล่า -->
   <section class="screen" id="s-blank" hidden>
     <div class="wrap blank">
@@ -364,6 +375,8 @@
 
   function show(id) {
     screens.forEach((s) => { s.hidden = s.id !== id; });
+    const back = $('#back-level');
+    if (back) back.hidden = !(['s-level', 's-blank'].includes(id) && cur > 0);
     window.scrollTo(0, 0);
   }
   function setP(p) { cmp.style.setProperty('--p', p + '%'); slider.value = p; }
@@ -391,38 +404,46 @@
             <div class="findfake-grid" id="findfake-grid">
               ${lv.images.map((src, k) => `<button class="findfake-card" type="button" data-image="${src}" aria-label="เลือกรูปที่ ${k + 1}"><img src="${src}" alt="ภาพตัวเลือกที่ ${k + 1}" draggable="false"></button>`).join('')}
             </div>
-            <div class="findfake-actions" id="findfake-actions" hidden>
+          </div>
+          <div class="findfake-modal" id="findfake-answer-modal" hidden>
+            <div class="findfake-modal-panel">
               <p class="findfake-note">ทำไมถึงผิด</p>
               <div class="findfake-options" id="findfake-options">
                 ${lv.options.map((label) => `<button class="ans rect" type="button">${label}</button>`).join('')}
               </div>
             </div>
           </div>
+          <div class="findfake-modal" id="findfake-hurt-modal" hidden>
+            <div class="findfake-modal-panel">
+              <img class="findfake-hurt-img" src="ployfeelhurt.png" alt="พลอยงอน">
+              <p class="findfake-hurt-title">พลอยงอน</p>
+              <button class="next" id="findfake-hurt-back" type="button">กลับไปเลือกภาพ</button>
+            </div>
+          </div>
           <p class="feedback" id="findfake-feedback" aria-live="polite"></p>
-          <button class="next" id="findfake-next" hidden>${nextLabel(i)}</button>
         `;
         const cards = [...blank.querySelectorAll('.findfake-card')];
         cards.forEach((card) => card.addEventListener('click', () => {
           if (card.dataset.image !== lv.fake) {
-            card.style.borderColor = 'var(--bad)';
+            $('#findfake-hurt-modal').hidden = false;
             return;
           }
-          cards.forEach((item) => { item.disabled = true; });
-          card.style.borderColor = 'var(--ok)';
-          $('#findfake-actions').hidden = false;
+          $('#findfake-answer-modal').hidden = false;
         }));
+        $('#findfake-hurt-back').addEventListener('click', () => {
+          $('#findfake-hurt-modal').hidden = true;
+        });
         blank.querySelectorAll('#findfake-options .ans').forEach((button) => button.addEventListener('click', () => {
           const fakeCard = blank.querySelector('[data-image="fake5.png"]');
           const img = fakeCard.querySelector('img');
           img.src = lv.real;
-          img.alt = lv.real;
+          img.alt = 'ภาพตัวเลือกที่ 2';
           fakeCard.dataset.image = lv.real;
+          $('#findfake-answer-modal').hidden = true;
           button.classList.add('ok');
           blank.querySelectorAll('#findfake-options .ans').forEach((b) => { b.disabled = true; if (b !== button) b.classList.add('dim'); });
           $('#findfake-feedback').textContent = 'ถูกทุกข้อ ❤️';
           $('#findfake-feedback').className = 'feedback ok';
-          $('#findfake-next').hidden = false;
-          $('#findfake-next').addEventListener('click', goNext, { once: true });
           results[cur] = { right: true, chosen: button.textContent, correct: 'ทุกข้อถูกหมด' };
         }));
       } else {
@@ -585,6 +606,10 @@
     results = [];
     loadLevel(0);
   });
+  $('#back-level').addEventListener('click', () => {
+    if (cur > 0) loadLevel(cur - 1);
+  });
+  
   $('#music').addEventListener('click', () => {
     if (!audio) return;
     audio.muted = !audio.muted;

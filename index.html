@@ -231,6 +231,31 @@
     .findfake-card img { max-height: min(37dvh, 440px); }
   }
 
+  /* Level 5: จำกัดขนาดตารางภาพตามความสูงจอ เพื่อให้เห็นครบ 4 ภาพบน iPad/มือถือ */
+  #s-blank.findfake-level .findfake-grid {
+    width: min(100%, calc(100dvh - 280px));
+  }
+  #s-blank.findfake-level .findfake-card img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    max-height: none;
+    object-fit: contain;
+  }
+  @media (max-height: 750px) {
+    #s-blank.findfake-level .findfake-screen {
+      gap: 8px;
+      padding-top: 8px;
+      padding-bottom: max(8px, env(safe-area-inset-bottom, 0px));
+    }
+    #s-blank.findfake-level .findfake-grid {
+      width: min(100%, calc(100dvh - 240px));
+      gap: 7px;
+    }
+    #s-blank.findfake-level .findfake-card { padding: 3px; }
+    #s-blank.findfake-level .findfake { gap: 8px; }
+  }
+
   /* ---------- หน้าเปล่า (ด่าน 5) ---------- */
   .blank { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; padding-block: 40px; }
 

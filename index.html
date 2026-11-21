@@ -484,9 +484,13 @@
     cancelAnimationFrame(anim);
     if (lv.kind === 'blank' || lv.kind === 'findfake' || lv.kind === 'textentry' || lv.kind === 'level7') {
       $('#s-blank').classList.toggle('findfake-level', lv.kind === 'findfake');
-      $('#blank-tag').textContent = 'Level ' + (i + 1);
-      $('#blank-next').textContent = nextLabel(i);
-      $('#blank-next').hidden = lv.kind === 'findfake';
+      const initialBlankTag = $('#blank-tag');
+      const initialBlankNext = $('#blank-next');
+      if (initialBlankTag) initialBlankTag.textContent = 'Level ' + (i + 1);
+      if (initialBlankNext) {
+        initialBlankNext.textContent = nextLabel(i);
+        initialBlankNext.hidden = lv.kind === 'findfake' || lv.kind === 'level7' || lv.kind === 'textentry';
+      }
       const blank = $('#s-blank .blank');
       if (lv.kind === 'level7') {
         blank.classList.remove('findfake-screen');

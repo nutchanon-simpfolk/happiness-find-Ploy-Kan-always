@@ -179,6 +179,12 @@
   .ans.bad { background: var(--bad); border-color: var(--bad); color: #fff; }
   .ans.dim { opacity: .45; }
   .extra { display: flex; flex-wrap: wrap; gap: 8px 10px; justify-content: center; max-width: 560px; animation: enter .4s ease both; }
+  .pair.fit { align-items: center; }
+  /* ด่านที่มีคำถามต่อ: เผื่อที่ให้แถวปุ่มที่สองและปุ่มถัดไป (ใช้ id เพื่อให้ชนะกฎขนาดตามความสูงจอด้านล่าง) */
+  #s-level.has-follow .level-body .stamp { width: min(100%, calc((100dvh - 400px) * var(--r, 1.5795))); }
+  #s-level.has-follow .level-body .pair { width: min(100%, calc(2 * (100dvh - 450px) * var(--pr, 1) + 44px)); }
+  #s-level.has-follow .level-body .pair .stamp { width: auto; }
+  .follow-q { flex-basis: 100%; margin: 2px 0 0; text-align: center; font-family: var(--font-th-display); font-weight: 600; font-size: clamp(19px, 3.2dvh, 26px); }
 
   .feedback { min-height: 28px; margin: 0; font-weight: 500; font-size: 17px; }
   .feedback.ok { color: var(--ok); } .feedback.bad { color: var(--bad); }
@@ -431,7 +437,8 @@
      kind:    'quiz' (มีรูปและปุ่มตอบ) | 'bride' (ด่านพิเศษ มีปุ่มชื่อ) | 'blank' (หน้าเปล่า)
      reveal:  'slider' เลื่อนเทียบ | 'side' วางข้างกัน | 'none' ไม่มีรูปเฉลย
      style:   'num' ปุ่มวงกลมเลข | 'rect' ปุ่มสี่เหลี่ยม
-     answer:  ลำดับของคำตอบที่ถูกในรายการ options (นับจาก 0) */
+     answer:  ลำดับของคำตอบที่ถูกในรายการ options (นับจาก 0)
+     follow:  (ไม่บังคับ) คำถามต่อหลังตอบถูก  revealImages: (ไม่บังคับ) รูปเฉลยแทน fake/real  fitFrames: กรอบตามสัดส่วนรูป */
   const LEVELS = [
     { kind: 'quiz', question: 'คนไหนคือเจ้าสาว?', fake: 'fake1.png', real: 'real1.jpg',
       reveal: 'slider', labels: ['ภาพเบลอ', 'ภาพจริง'], style: 'num', options: ['1', '2', '3', '4'], answer: 2,
@@ -445,7 +452,12 @@
     { kind: 'findfake', question: 'เหตุการณ์ไหนไม่มีอยู่จริง?', images: ['real55.jpg', 'fake5.png', 'real555.jpg', 'real5555.jpg'], fake: 'fake5.png', real: 'real5.jpg', options: ['พลอยต้องมีกานต์', 'รู้สึกออร่าความสวยจากภาพ', 'อันนี้ภาพ AI', 'ผมไม่รู้ ผมรักภรรยา'] },
     { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
       reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
-      names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] }
+      names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] },
+    // ด่าน 7: ตอบ "ไม่จริง" แล้วมีคำถามต่อ (follow) ว่าใครคือผู้ชายตัวจริง จากนั้นแสดงรูปจริง 2 รูปข้างกัน
+    { kind: 'quiz', question: 'อันนี้ภาพจริงหรือไม่?', fake: 'fake7.png', real: 'real7.jpg',
+      reveal: 'side', revealImages: ['real7.jpg', 'real77.png'], fitFrames: true, labels: ['ภาพจริง', 'ภาพจริง'],
+      style: 'rect', options: ['จริง', 'ไม่จริง'], answer: 1,
+      follow: { question: 'ใครคือผู้ชายตัวจริง?', options: ['หมู', 'ต้นข้าว', 'เอก'], answer: 1 } }
   ];
   const MUSIC_SRC = encodeURI('คู่ชีวิต.mp3'); // เพลงเริ่มเล่นเมื่อกดแผ่นเสียงที่หน้าแรก
 
@@ -543,6 +555,7 @@
     $('#lv-q').textContent = lv.question;
     levelEl.style.setProperty('--reserve', (lv.reserve || 300) + 'px');
     levelEl.style.setProperty('--r', 1.5795);
+    levelEl.classList.toggle('has-follow', !!lv.follow);
 
     const fake = $('#img-fake'), real = $('#img-real');
     fake.onload = () => { if (fake.naturalWidth) levelEl.style.setProperty('--r', fake.naturalWidth / fake.naturalHeight); };
@@ -599,7 +612,56 @@
       extra.hidden = false;
       return;
     }
+    // ด่านที่มีคำถามต่อ: ตอบถูกแล้วค่อยถามข้อถัดไป
+    if (lv.follow && k === lv.answer) { askFollow(lv, k); return; }
     finish(k, k === lv.answer, null, null);
+  }
+
+  function askFollow(lv, k) {
+    const first = [...document.querySelectorAll('#answers .ans')];
+    first.forEach((b) => { b.disabled = true; });
+    first[k].classList.add('ok');
+    const extra = $('#extra');
+    extra.innerHTML = '';
+    const q = document.createElement('p');
+    q.className = 'follow-q';
+    q.textContent = lv.follow.question;
+    extra.appendChild(q);
+    lv.follow.options.forEach((label, j) => {
+      const b = document.createElement('button');
+      b.className = 'ans rect';
+      b.textContent = label;
+      b.addEventListener('click', () => finishFollow(lv, k, j, b));
+      extra.appendChild(b);
+    });
+    extra.hidden = false;
+  }
+
+  function finishFollow(lv, k, j, btn) {
+    const f = lv.follow;
+    const right = j === f.answer;
+    const opts = [...document.querySelectorAll('#extra .ans')];
+    opts.forEach((b, idx) => { b.disabled = true; if (idx !== j) b.classList.add('dim'); });
+    btn.classList.remove('dim');
+    btn.classList.add(right ? 'ok' : 'bad');
+    if (!right) {
+      opts[f.answer].classList.remove('dim');
+      opts[f.answer].classList.add('ok');
+    }
+    const fb = $('#feedback');
+    fb.textContent = right ? 'ถูกต้อง!' : 'ยังไม่ใช่นะ คำตอบคือ ' + f.options[f.answer];
+    fb.className = 'feedback ' + (right ? 'ok' : 'bad');
+    results[cur] = {
+      right,
+      chosen: lv.options[k] + ' › ' + f.options[j],
+      correct: lv.options[lv.answer] + ' › ' + f.options[f.answer]
+    };
+    $('#next').style.visibility = 'visible';
+    reveal(lv);
+    if (!right) {
+      const wrongModal = $('#wrong-answer-modal');
+      if (wrongModal) wrongModal.hidden = false;
+    }
   }
 
   function finish(k, right, sub, subBtn) {
@@ -638,12 +700,23 @@
   function reveal(lv) {
     if (lv.reveal === 'side') {
       const fakeImg = $('#p-fake'), realImg = $('#p-real');
-      // Level 3: set each frame to the exact aspect ratio of its own image.
-      if (cur === 2) {
-        [[fakeImg, lv.fake], [realImg, lv.real]].forEach(([img, src]) => {
+      const srcL = lv.revealImages ? lv.revealImages[0] : lv.fake;
+      const srcR = lv.revealImages ? lv.revealImages[1] : lv.real;
+      // Level 3 และด่านที่ตั้ง fitFrames: ปรับกรอบให้ตรงสัดส่วนของแต่ละรูป
+      const pairEl = $('#pair');
+      pairEl.classList.toggle('fit', cur === 2 || !!lv.fitFrames);
+      pairEl.style.removeProperty('--pr');
+      if (cur === 2 || lv.fitFrames) {
+        delete fakeImg.dataset.ratio;
+        delete realImg.dataset.ratio;
+        [[fakeImg, srcL], [realImg, srcR]].forEach(([img, src]) => {
           const fitFrame = () => {
             if (img.naturalWidth && img.naturalHeight) {
               img.closest('.frame').style.aspectRatio = img.naturalWidth + ' / ' + img.naturalHeight;
+              img.dataset.ratio = img.naturalWidth / img.naturalHeight;
+              // สัดส่วนของรูปที่สูงที่สุด ใช้จำกัดความกว้างคู่ภาพให้พอดีจอ
+              const rs = [fakeImg, realImg].map((el) => parseFloat(el.dataset.ratio)).filter(Boolean);
+              if (rs.length) pairEl.style.setProperty('--pr', Math.min(...rs));
             }
           };
           img.onload = fitFrame;
@@ -651,8 +724,8 @@
           if (img.complete) fitFrame();
         });
       } else {
-        fakeImg.src = lv.fake;
-        realImg.src = lv.real;
+        fakeImg.src = srcL;
+        realImg.src = srcR;
       }
       $('#pl-l').textContent = lv.labels[0];
       $('#pl-r').textContent = lv.labels[1];

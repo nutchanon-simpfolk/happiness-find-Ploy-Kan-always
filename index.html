@@ -466,7 +466,7 @@
   const $ = (s) => document.querySelector(s);
   const screens = document.querySelectorAll('.screen');
   const cmp = $('#cmp'), slider = $('#slider'), levelEl = $('#s-level');
-  let cur = 0, results = [], audio = null, anim = 0;
+  let cur = 0, results = [], audio = null, anim = 0, wrongAnswerAction = null;
 
   function show(id) {
     screens.forEach((s) => { s.hidden = s.id !== id; });
@@ -525,16 +525,26 @@
             </div>
           </div>
         `;
-        $('#level7-true').addEventListener('click', () => {
+        const showLevel7AnswerAfterWrong = (chosen) => {
+          results[cur] = { right: false, chosen, correct: 'ไม่จริง · ต้นข้าว' };
+          wrongAnswerAction = () => {
+            $('#wrong-answer-modal').hidden = true;
+            $('#level7-first').hidden = true;
+            $('#level7-second').hidden = true;
+            $('#level7-success').hidden = false;
+            $('#level7-next').onclick = () => loadLevel(7);
+          };
+          $('#wrong-answer-back').textContent = 'ดูเฉลยและไปด่านถัดไป →';
           $('#wrong-answer-modal').hidden = false;
-        });
+        };
+        $('#level7-true').addEventListener('click', () => showLevel7AnswerAfterWrong('จริง'));
         $('#level7-false').addEventListener('click', () => {
           $('#level7-first').hidden = true;
           $('#level7-second').hidden = false;
         });
         blank.querySelectorAll('[data-man]').forEach((button) => button.addEventListener('click', () => {
           if (button.dataset.man !== 'ต้นข้าว') {
-            $('#wrong-answer-modal').hidden = false;
+            showLevel7AnswerAfterWrong('ไม่จริง · ' + button.dataset.man);
             return;
           }
           results[cur] = { right: true, chosen: 'ไม่จริง · ต้นข้าว', correct: 'ไม่จริง · ต้นข้าว' };
@@ -563,8 +573,16 @@
           const answer = input.value.trim();
           const feedback = $('#level8-feedback');
           if (!answer.includes('5 ปี')) {
+            results[cur] = { right: false, chosen: answer || 'ไม่ได้พิมพ์คำตอบ', correct: 'ข้อความที่มีคำว่า 5 ปี' };
+            wrongAnswerAction = () => {
+              $('#wrong-answer-modal').hidden = true;
+              $('#level8-submit').hidden = true;
+              input.disabled = true;
+              $('#level8-success').hidden = false;
+              $('#level8-summary').onclick = showSummary;
+            };
+            $('#wrong-answer-back').textContent = 'ดูเฉลยและไปหน้าสรุป →';
             $('#wrong-answer-modal').hidden = false;
-            input.focus();
             return;
           }
           results[cur] = { right: true, chosen: answer, correct: 'มีคำว่า 5 ปี' };
@@ -843,6 +861,13 @@
     if (cur > 0) loadLevel(cur - 1);
   });
   $('#wrong-answer-back').addEventListener('click', () => {
+    if (wrongAnswerAction) {
+      const action = wrongAnswerAction;
+      wrongAnswerAction = null;
+      $('#wrong-answer-back').textContent = 'กลับไปดูคำตอบ';
+      action();
+      return;
+    }
     $('#wrong-answer-modal').hidden = true;
   });
   

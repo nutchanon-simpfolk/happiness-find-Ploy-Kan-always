@@ -577,7 +577,10 @@
       } else {
         blank.classList.remove('findfake-screen');
         blank.innerHTML = '<p class="level-tag" id="blank-tag">Level ' + (i + 1) + '</p><button class="next" id="blank-next">' + nextLabel(i) + '</button>';
-        $('#blank-next').addEventListener('click', goNext);
+        $('#blank-next').addEventListener('click', () => {
+          if (i === 6) loadLevel(7);
+          else goNext();
+        });
       }
       show('s-blank');
       return;
@@ -607,6 +610,11 @@
     const nx = $('#next');
     nx.style.visibility = 'hidden';
     nx.textContent = nextLabel(i);
+    // กำหนดทางไปด่านถัดไปให้ปุ่มของแต่ละด่านชัดเจน ป้องกันข้ามไปหน้าสรุป
+    nx.onclick = () => {
+      if (i === 5) loadLevel(6); // Level 6 -> Level 7
+      else goNext();
+    };
     const extra = $('#extra');
     extra.hidden = true; extra.innerHTML = '';
 
@@ -789,7 +797,7 @@
     $('#music').setAttribute('aria-pressed', String(audio.muted));
     $('#music').setAttribute('aria-label', audio.muted ? 'เปิดเสียงเพลง' : 'ปิดเสียงเพลง');
   });
-  $('#next').addEventListener('click', goNext);
+  // ปุ่ม #next กำหนดการทำงานตามด่านภายใน loadLevel()
   $('#blank-next').addEventListener('click', goNext);
   $('#again').addEventListener('click', () => { results = []; loadLevel(0); });
 </script>

@@ -281,6 +281,13 @@
     #s-blank.findfake-level .findfake { gap: 6px; }
   }
 
+  .level8-image { display: block; width: min(100%, 520px); max-height: 42dvh; object-fit: contain; border-radius: 12px; }
+  .level8-label { font-family: var(--font-th-display); font-weight: 600; font-size: 18px; }
+  .level8-input { display: block; width: min(100%, 520px); min-height: 90px; box-sizing: border-box; resize: vertical; padding: 12px 14px; border: 1px solid var(--rose); border-radius: 12px; background: #FBF7EC; color: var(--ink); font: inherit; }
+  .level8-wish { max-width: 560px; margin: 8px 0; font-family: var(--font-th-display); font-weight: 600; font-size: clamp(22px, 5vw, 30px); line-height: 1.6; }
+  #level8-success { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  #level8-success[hidden] { display: none !important; }
+
   /* ---------- หน้าเปล่า (ด่าน 5) ---------- */
   .blank { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 28px; text-align: center; padding-block: 40px; }
 
@@ -445,7 +452,9 @@
     { kind: 'findfake', question: 'เหตุการณ์ไหนไม่มีอยู่จริง?', images: ['real55.jpg', 'fake5.png', 'real555.jpg', 'real5555.jpg'], fake: 'fake5.png', real: 'real5.jpg', options: ['พลอยต้องมีกานต์', 'รู้สึกออร่าความสวยจากภาพ', 'อันนี้ภาพ AI', 'ผมไม่รู้ ผมรักภรรยา'] },
     { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
       reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
-      names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] }
+      names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] },
+    { kind: 'blank', question: 'พร้อมไปด่านสุดท้ายหรือยัง?' },
+    { kind: 'textentry', question: 'เขียนสิ่งที่อยากบอกกัน ❤️', fake: 'fake8.png', real: 'real8.jpg' }
   ];
   const MUSIC_SRC = encodeURI('คู่ชีวิต.mp3'); // เพลงเริ่มเล่นเมื่อกดแผ่นเสียงที่หน้าแรก
 
@@ -470,13 +479,47 @@
     cur = i;
     const lv = LEVELS[i];
     cancelAnimationFrame(anim);
-    if (lv.kind === 'blank' || lv.kind === 'findfake') {
+    if (lv.kind === 'blank' || lv.kind === 'findfake' || lv.kind === 'textentry') {
       $('#s-blank').classList.toggle('findfake-level', lv.kind === 'findfake');
       $('#blank-tag').textContent = 'Level ' + (i + 1);
       $('#blank-next').textContent = nextLabel(i);
       $('#blank-next').hidden = lv.kind === 'findfake';
       const blank = $('#s-blank .blank');
-      if (lv.kind === 'findfake') {
+      if (lv.kind === 'textentry') {
+        blank.classList.remove('findfake-screen');
+        blank.innerHTML = `
+          <p class="level-tag">Level ${i + 1}</p>
+          <h2 class="question">${lv.question}</h2>
+          <img class="level8-image" src="${lv.fake}" alt="ภาพด่าน 8">
+          <label class="level8-label" for="level8-answer">พิมพ์คำตอบของคุณ</label>
+          <textarea class="level8-input" id="level8-answer" rows="3" placeholder="พิมพ์ข้อความที่มีคำว่า 5 ปี..." aria-label="คำตอบด่าน 8"></textarea>
+          <p class="feedback" id="level8-feedback" aria-live="polite"></p>
+          <button class="next" id="level8-submit" type="button">เสร็จสิ้น</button>
+          <div id="level8-success" hidden>
+            <img class="level8-image" src="${lv.real}" alt="ภาพจริงด่าน 8">
+            <p class="level8-wish">ขอให้อยู่กันไปนานๆจนจำวันครบรอบไม่ได้ไปเลย รอเบบี๋กานต์ เบบี๋พลอยนะ</p>
+            <button class="next" id="level8-summary" type="button">ไปหน้าสรุปสุดท้าย →</button>
+          </div>
+        `;
+        const input = $('#level8-answer');
+        $('#level8-submit').addEventListener('click', () => {
+          const answer = input.value.trim();
+          const feedback = $('#level8-feedback');
+          if (!answer.includes('5 ปี')) {
+            feedback.textContent = 'ลองอีกครั้งนะ ต้องมีคำว่า “5 ปี” ❤️';
+            feedback.className = 'feedback bad';
+            input.focus();
+            return;
+          }
+          results[cur] = { right: true, chosen: answer, correct: 'มีคำว่า 5 ปี' };
+          feedback.textContent = 'ถูกต้องแล้ว ❤️';
+          feedback.className = 'feedback ok';
+          $('#level8-submit').hidden = true;
+          input.disabled = true;
+          $('#level8-success').hidden = false;
+          $('#level8-summary').addEventListener('click', showSummary, { once: true });
+        });
+      } else if (lv.kind === 'findfake') {
         blank.classList.add('findfake-screen');
         blank.innerHTML = `
           <p class="level-tag">Level ${i + 1}</p>

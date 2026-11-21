@@ -282,6 +282,9 @@
   }
 
   .level8-image { display: block; width: min(100%, 520px); max-height: 42dvh; object-fit: contain; border-radius: 12px; }
+  .level7-reveal-images { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; width:100%; }
+  .level7-reveal-images img { display:block; width:min(46%, 360px); max-height:30dvh; object-fit:contain; border-radius:10px; }
+
   .level8-label { font-family: var(--font-th-display); font-weight: 600; font-size: 18px; }
   .level8-input { display: block; width: min(100%, 520px); min-height: 90px; box-sizing: border-box; resize: vertical; padding: 12px 14px; border: 1px solid var(--rose); border-radius: 12px; background: #FBF7EC; color: var(--ink); font: inherit; }
   .level8-wish { max-width: 560px; margin: 8px 0; font-family: var(--font-th-display); font-weight: 600; font-size: clamp(22px, 5vw, 30px); line-height: 1.6; }
@@ -453,7 +456,7 @@
     { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
       reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
       names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] },
-    { kind: 'blank', question: 'พร้อมไปด่านสุดท้ายหรือยัง?' },
+    { kind: 'level7', question: 'ภาพนี้จริงหรือไม่?' },
     { kind: 'textentry', question: 'เขียนสิ่งที่อยากบอกกัน ❤️', fake: 'fake8.png', real: 'real8.jpg' }
   ];
   const MUSIC_SRC = encodeURI('คู่ชีวิต.mp3'); // เพลงเริ่มเล่นเมื่อกดแผ่นเสียงที่หน้าแรก
@@ -479,13 +482,67 @@
     cur = i;
     const lv = LEVELS[i];
     cancelAnimationFrame(anim);
-    if (lv.kind === 'blank' || lv.kind === 'findfake' || lv.kind === 'textentry') {
+    if (lv.kind === 'blank' || lv.kind === 'findfake' || lv.kind === 'textentry' || lv.kind === 'level7') {
       $('#s-blank').classList.toggle('findfake-level', lv.kind === 'findfake');
       $('#blank-tag').textContent = 'Level ' + (i + 1);
       $('#blank-next').textContent = nextLabel(i);
       $('#blank-next').hidden = lv.kind === 'findfake';
       const blank = $('#s-blank .blank');
-      if (lv.kind === 'textentry') {
+      if (lv.kind === 'level7') {
+        blank.classList.remove('findfake-screen');
+        blank.innerHTML = `
+          <p class="level-tag">Level 7</p>
+          <h2 class="question">ภาพนี้จริงหรือไม่?</h2>
+          <img class="level8-image" src="fake7.png" alt="ภาพด่าน 7">
+          <div id="level7-stage" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
+            <div id="level7-first" style="display:flex;flex-direction:column;align-items:center;gap:12px">
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+                <button class="ans rect" id="level7-true" type="button">จริง</button>
+                <button class="ans rect" id="level7-false" type="button">ไม่จริง</button>
+              </div>
+              <p class="feedback" id="level7-feedback" aria-live="polite"></p>
+            </div>
+            <div id="level7-second" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px">
+              <h2 class="question">ใครคือผู้ชายตัวจริง?</h2>
+              <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
+                <button class="ans rect" type="button" data-man="หมู">หมู</button>
+                <button class="ans rect" type="button" data-man="ต้นข้าว">ต้นข้าว</button>
+                <button class="ans rect" type="button" data-man="เอก">เอก</button>
+              </div>
+            </div>
+            <div id="level7-success" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
+              <div class="level7-reveal-images">
+                <img src="real7.jpg" alt="ภาพจริงด่าน 7">
+                <img src="real77.png" alt="ภาพเพิ่มเติมด่าน 7">
+              </div>
+              <button class="next" id="level7-next" type="button">ด่านถัดไป →</button>
+            </div>
+          </div>
+        `;
+        $('#level7-true').addEventListener('click', () => {
+          $('#level7-feedback').textContent = 'ลองเลือกคำตอบอีกครั้งนะ ❤️';
+          $('#level7-feedback').className = 'feedback bad';
+        });
+        $('#level7-false').addEventListener('click', () => {
+          $('#level7-first').hidden = true;
+          $('#level7-second').hidden = false;
+        });
+        blank.querySelectorAll('[data-man]').forEach((button) => button.addEventListener('click', () => {
+          if (button.dataset.man !== 'ต้นข้าว') {
+            const feedback = $('#level7-feedback');
+            feedback.textContent = 'ยังไม่ใช่ ลองอีกครั้งนะ ❤️';
+            feedback.className = 'feedback bad';
+            $('#level7-first').hidden = true;
+            $('#level7-second').querySelector('h2').insertAdjacentElement('afterend', feedback);
+            feedback.hidden = false;
+            return;
+          }
+          results[cur] = { right: true, chosen: 'ไม่จริง · ต้นข้าว', correct: 'ไม่จริง · ต้นข้าว' };
+          $('#level7-second').hidden = true;
+          $('#level7-success').hidden = false;
+          $('#level7-next').addEventListener('click', () => loadLevel(7), { once: true });
+        }));
+      } else if (lv.kind === 'textentry') {
         blank.classList.remove('findfake-screen');
         blank.innerHTML = `
           <p class="level-tag">Level ${i + 1}</p>

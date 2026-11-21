@@ -717,6 +717,9 @@
   }
 
   function goNext() {
+    // ด่าน 6 ต้องไปหน้าเชื่อม Level 7 ก่อน แล้ว Level 7 จึงพาไป Level 8
+    if (cur === 5) { loadLevel(6); return; }
+    if (cur === 6) { loadLevel(7); return; }
     if (cur + 1 < LEVELS.length) loadLevel(cur + 1);
     else showSummary();
   }

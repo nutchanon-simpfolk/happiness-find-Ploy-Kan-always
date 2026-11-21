@@ -512,9 +512,10 @@
             <div id="level7-second" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px">
               <h2 class="question">ใครคือผู้ชายตัวจริง?</h2>
               <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
-                <button class="ans rect" type="button" data-man="หมู">หมู</button>
-                <button class="ans rect" type="button" data-man="ต้นข้าว">ต้นข้าว</button>
-                <button class="ans rect" type="button" data-man="เอก">เอก</button>
+                <button class="ans rect" type="button" data-man="กฤตพร">กฤตพร</button>
+                <button class="ans rect" type="button" data-man="ธนดล">ธนดล</button>
+                <button class="ans rect" type="button" data-man="อธิปัตย์">อธิปัตย์</button>
+                <button class="ans rect" type="button" data-man="หทัยรัตน์">หทัยรัตน์</button>
               </div>
             </div>
             <div id="level7-success" hidden style="display:flex;flex-direction:column;align-items:center;gap:12px;width:100%">
@@ -528,7 +529,7 @@
           </div>
         `;
         const showLevel7AnswerAfterWrong = (chosen) => {
-          results[cur] = { right: false, chosen, correct: 'ไม่จริง · ต้นข้าว' };
+          results[cur] = { right: false, chosen, correct: 'ไม่จริง · ธนดล' };
           wrongAnswerAction = () => {
             $('#wrong-answer-modal').hidden = true;
             $('#level7-first').hidden = true;
@@ -545,11 +546,11 @@
           $('#level7-second').hidden = false;
         });
         blank.querySelectorAll('[data-man]').forEach((button) => button.addEventListener('click', () => {
-          if (button.dataset.man !== 'ต้นข้าว') {
+          if (button.dataset.man !== 'ธนดล') {
             showLevel7AnswerAfterWrong('ไม่จริง · ' + button.dataset.man);
             return;
           }
-          results[cur] = { right: true, chosen: 'ไม่จริง · ต้นข้าว', correct: 'ไม่จริง · ต้นข้าว' };
+          results[cur] = { right: true, chosen: 'ไม่จริง · ธนดล', correct: 'ไม่จริง · ธนดล' };
           $('#level7-second').hidden = true;
           $('#level7-success').hidden = false;
           $('#level7-next').addEventListener('click', () => loadLevel(6), { once: true });

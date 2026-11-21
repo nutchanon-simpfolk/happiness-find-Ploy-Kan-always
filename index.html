@@ -456,10 +456,10 @@
     { kind: 'quiz', question: 'เจ้าสาวอยู่ไหน?', fake: 'fake4.png', real: 'real4.jpg',
       reveal: 'slider', labels: ['ภาพที่ให้ดู', 'ภาพจริง'], style: 'rect', options: ['เจ้าสาวอยู่ข้างๆ', 'เจ้าสาวอยู่บ้าน'], answer: 0 },
     { kind: 'findfake', question: 'เหตุการณ์ไหนไม่มีอยู่จริง?', images: ['real55.jpg', 'fake5.png', 'real555.jpg', 'real5555.jpg'], fake: 'fake5.png', real: 'real5.jpg', options: ['พลอยต้องมีกานต์', 'รู้สึกออร่าความสวยจากภาพ', 'อันนี้ภาพ AI', 'ผมไม่รู้ ผมรักภรรยา'] },
+    { kind: 'level7', question: 'ภาพนี้จริงหรือไม่?' },
     { kind: 'bride', question: 'คนนี้ใช่เจ้าสาวคุณหรือเปล่า?', fake: 'real6.jpg', real: null,
       reveal: 'none', style: 'rect', options: ['เจ้าสาว', 'พี่น้องคนอื่น'], answer: 0, reserve: 430,
       names: ['หมู', 'มิลก์', 'ต้นข้าว', 'กุ๊กกิ๊ก', 'ดรีม', 'เดียร์', 'โฟล์ค', 'เฟรนด์'] },
-    { kind: 'level7', question: 'ภาพนี้จริงหรือไม่?' },
     { kind: 'textentry', question: 'จำได้มั้ยว่าวันนั้นบอกอะไรพลอย ❤️', fake: 'fake8.png', real: 'real8.jpg' }
   ];
   const MUSIC_SRC = encodeURI('คู่ชีวิต.mp3'); // เพลงเริ่มเล่นเมื่อกดแผ่นเสียงที่หน้าแรก
@@ -498,7 +498,7 @@
       if (lv.kind === 'level7') {
         blank.classList.remove('findfake-screen');
         blank.innerHTML = `
-          <p class="level-tag">Level 7</p>
+          <p class="level-tag">Level ${i + 1}</p>
           <h2 class="question">ภาพนี้จริงหรือไม่?</h2>
           <div class="level-special-frame"><img src="fake7.png" alt="ภาพด่าน 7"></div>
           <div id="level7-stage" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
@@ -534,7 +534,7 @@
             $('#level7-first').hidden = true;
             $('#level7-second').hidden = true;
             $('#level7-success').hidden = false;
-            $('#level7-next').onclick = () => loadLevel(7);
+            $('#level7-next').onclick = () => loadLevel(6);
           };
           $('#wrong-answer-back').textContent = 'ดูเฉลยและไปด่านถัดไป →';
           $('#wrong-answer-modal').hidden = false;
@@ -552,7 +552,7 @@
           results[cur] = { right: true, chosen: 'ไม่จริง · ต้นข้าว', correct: 'ไม่จริง · ต้นข้าว' };
           $('#level7-second').hidden = true;
           $('#level7-success').hidden = false;
-          $('#level7-next').addEventListener('click', () => loadLevel(7), { once: true });
+          $('#level7-next').addEventListener('click', () => loadLevel(6), { once: true });
         }));
       } else if (lv.kind === 'textentry') {
         blank.classList.remove('findfake-screen');
@@ -801,9 +801,6 @@
   }
 
   function goNext() {
-    // ด่าน 6 ต้องไปหน้าเชื่อม Level 7 ก่อน แล้ว Level 7 จึงพาไป Level 8
-    if (cur === 5) { loadLevel(6); return; }
-    if (cur === 6) { loadLevel(7); return; }
     if (cur + 1 < LEVELS.length) loadLevel(cur + 1);
     else showSummary();
   }

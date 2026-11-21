@@ -282,6 +282,8 @@
   }
 
   .level8-image { display: block; width: min(100%, 520px); max-height: 42dvh; object-fit: contain; border-radius: 12px; }
+  .level-special-frame { width:min(100%, 520px); padding:5px; box-sizing:border-box; background:#FBF7EC; box-shadow:0 0 0 1px rgba(130,95,75,.22), 0 6px 18px rgba(90,64,50,.14); border-radius:8px; }
+  .level-special-frame img { display:block; width:100%; max-height:42dvh; object-fit:contain; border-radius:4px; }
   .level7-reveal-images { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; width:100%; }
   .level7-reveal-images img { display:block; width:min(46%, 360px); max-height:30dvh; object-fit:contain; border-radius:10px; }
 
@@ -497,7 +499,7 @@
         blank.innerHTML = `
           <p class="level-tag">Level 7</p>
           <h2 class="question">ภาพนี้จริงหรือไม่?</h2>
-          <img class="level8-image" src="fake7.png" alt="ภาพด่าน 7">
+          <div class="level-special-frame"><img src="fake7.png" alt="ภาพด่าน 7"></div>
           <div id="level7-stage" style="display:flex;flex-direction:column;align-items:center;gap:14px;width:100%">
             <div id="level7-first" style="display:flex;flex-direction:column;align-items:center;gap:12px">
               <div style="display:flex;flex-wrap:wrap;justify-content:center;gap:10px">
@@ -524,8 +526,7 @@
           </div>
         `;
         $('#level7-true').addEventListener('click', () => {
-          $('#level7-feedback').textContent = 'ลองเลือกคำตอบอีกครั้งนะ ❤️';
-          $('#level7-feedback').className = 'feedback bad';
+          $('#wrong-answer-modal').hidden = false;
         });
         $('#level7-false').addEventListener('click', () => {
           $('#level7-first').hidden = true;
@@ -533,12 +534,7 @@
         });
         blank.querySelectorAll('[data-man]').forEach((button) => button.addEventListener('click', () => {
           if (button.dataset.man !== 'ต้นข้าว') {
-            const feedback = $('#level7-feedback');
-            feedback.textContent = 'ยังไม่ใช่ ลองอีกครั้งนะ ❤️';
-            feedback.className = 'feedback bad';
-            $('#level7-first').hidden = true;
-            $('#level7-second').querySelector('h2').insertAdjacentElement('afterend', feedback);
-            feedback.hidden = false;
+            $('#wrong-answer-modal').hidden = false;
             return;
           }
           results[cur] = { right: true, chosen: 'ไม่จริง · ต้นข้าว', correct: 'ไม่จริง · ต้นข้าว' };
@@ -552,8 +548,8 @@
           <p class="level-tag">Level ${i + 1}</p>
           <h2 class="question">${lv.question}</h2>
           <img class="level8-image" src="${lv.fake}" alt="ภาพด่าน 8">
-          <label class="level8-label" for="level8-answer">พิมพ์คำตอบของคุณ</label>
-          <textarea class="level8-input" id="level8-answer" rows="3" placeholder="พิมพ์ข้อความที่มีคำว่า 5 ปี..." aria-label="คำตอบด่าน 8"></textarea>
+          <label class="level8-label" for="level8-answer">เขียนข้อความของคุณ</label>
+          <textarea class="level8-input" id="level8-answer" rows="3" placeholder="พิมพ์ข้อความ..." aria-label="คำตอบด่าน 8"></textarea>
           <p class="feedback" id="level8-feedback" aria-live="polite"></p>
           <button class="next" id="level8-submit" type="button">เสร็จสิ้น</button>
           <div id="level8-success" hidden>
@@ -567,8 +563,7 @@
           const answer = input.value.trim();
           const feedback = $('#level8-feedback');
           if (!answer.includes('5 ปี')) {
-            feedback.textContent = 'ลองอีกครั้งนะ ต้องมีคำว่า “5 ปี” ❤️';
-            feedback.className = 'feedback bad';
+            $('#wrong-answer-modal').hidden = false;
             input.focus();
             return;
           }

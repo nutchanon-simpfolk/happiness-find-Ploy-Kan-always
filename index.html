@@ -281,11 +281,12 @@
     #s-blank.findfake-level .findfake { gap: 6px; }
   }
 
-  .level8-image { display: block; width: min(100%, 520px); max-height: 42dvh; object-fit: contain; border-radius: 12px; }
-  .level-special-frame { width:min(100%, 520px); padding:5px; box-sizing:border-box; background:#FBF7EC; box-shadow:0 0 0 1px rgba(130,95,75,.22), 0 6px 18px rgba(90,64,50,.14); border-radius:8px; }
-  .level-special-frame img { display:block; width:100%; max-height:42dvh; object-fit:contain; border-radius:4px; }
-  .level7-reveal-images { display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:12px; width:100%; }
-  .level7-reveal-images img { display:block; width:min(46%, 360px); max-height:30dvh; object-fit:contain; border-radius:10px; }
+  .level8-image { display:block; width:100%; height:auto; max-height:42dvh; object-fit:contain; border-radius:4px; }
+  .level-special-frame { width:fit-content; max-width:min(100%, 520px); padding:5px; box-sizing:border-box; background:#FBF7EC; box-shadow:0 0 0 1px rgba(130,95,75,.22), 0 6px 18px rgba(90,64,50,.14); border-radius:8px; }
+  .level-special-frame img { display:block; width:auto; max-width:100%; height:auto; max-height:42dvh; object-fit:contain; border-radius:4px; }
+  .level7-reveal-images { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); align-items:center; justify-content:center; gap:12px; width:min(100%, 720px); }
+  .level7-reveal-images img { display:block; width:100%; aspect-ratio:4 / 3; height:auto; max-height:30dvh; object-fit:cover; border-radius:10px; }
+  @media (max-width:500px) { .level7-reveal-images { gap:8px; } .level7-reveal-images img { max-height:24dvh; } }
 
   .level8-label { font-family: var(--font-th-display); font-weight: 600; font-size: 18px; }
   .level8-input { display: block; width: min(100%, 520px); min-height: 90px; box-sizing: border-box; resize: vertical; padding: 12px 14px; border: 1px solid var(--rose); border-radius: 12px; background: #FBF7EC; color: var(--ink); font: inherit; }
@@ -558,13 +559,13 @@
         blank.innerHTML = `
           <p class="level-tag">Level ${i + 1}</p>
           <h2 class="question">${lv.question}</h2>
-          <img class="level8-image" src="${lv.fake}" alt="ภาพด่าน 8">
+          <div class="level-special-frame"><img class="level8-image" src="${lv.fake}" alt="ภาพด่าน 8"></div>
           <label class="level8-label" for="level8-answer">เขียนข้อความของคุณ</label>
           <textarea class="level8-input" id="level8-answer" rows="3" placeholder="พิมพ์ข้อความ..." aria-label="คำตอบด่าน 8"></textarea>
           <p class="feedback" id="level8-feedback" aria-live="polite"></p>
           <button class="next" id="level8-submit" type="button">เสร็จสิ้น</button>
           <div id="level8-success" hidden>
-            <img class="level8-image" src="${lv.real}" alt="ภาพจริงด่าน 8">
+            <div class="level-special-frame"><img class="level8-image" src="${lv.real}" alt="ภาพจริงด่าน 8"></div>
             <p class="level8-wish">ขอให้อยู่กันไปนานๆจนจำวันครบรอบไม่ได้ไปเลย รอเบบี๋กานต์ เบบี๋พลอยนะ</p>
             <button class="next" id="level8-summary" type="button">ไปหน้าสรุปสุดท้าย →</button>
           </div>
